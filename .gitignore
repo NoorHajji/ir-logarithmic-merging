@@ -1,0 +1,12 @@
+/build/
+/results/
+/work*/
+/test_work*/
+/out/
+/.vscode/
+/data/corpus_*.txt
+*.exe
+*.obj
+*.o
+*.a
+*.dll
