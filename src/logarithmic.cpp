@@ -44,11 +44,14 @@ void LogarithmicIndex::flush() {
 
 PostingsList LogarithmicIndex::lookup(const string& term) const {
     PostingsList result = z0_.lookup(term);
-    for (const string& base : gen_) {
-        if (!base.empty()) {
-            result = union_postings(result, disk_lookup(readers_, base, term));
+
+    for (size_t i = 0; i < gen_.size(); i++) {
+        if (!gen_[i].empty()) {
+            PostingsList temp = disk_lookup(readers_, gen_[i], term);
+            result = union_postings(result, temp);
         }
     }
+
     return result;
 }
 
@@ -79,17 +82,27 @@ void LogarithmicIndex::finalize(const string& out_base) {
 
 size_t LogarithmicIndex::disk_indexes() const {
     size_t count = 0;
-    for (const string& base : gen_) {
-        if (!base.empty()) count++;
+
+    for (size_t i = 0; i < gen_.size(); i++) {
+        if (gen_[i] != "") {
+            count++;
+        }
     }
+
     return count;
 }
 
 uint64_t LogarithmicIndex::generation_mask() const {
     uint64_t mask = 0;
-    for (size_t i = 0; i < gen_.size() && i < 64; ++i) {
-        if (!gen_[i].empty()) mask |= (uint64_t{1} << i);
+    uint64_t value = 1;
+
+    for (size_t i = 0; i < gen_.size() && i < 64; i++) {
+        if (gen_[i] != "") {
+            mask = mask + value;
+        }
+        value = value * 2;
     }
+
     return mask;
 }
 
